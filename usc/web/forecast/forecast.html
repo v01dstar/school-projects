@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Forecast</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link href="css/forecast.css" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="http://openlayers.org/api/OpenLayers.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.4.1/moment-timezone-with-data-2010-2020.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.js"></script>
+        <script>
+            var obj;
+            
+            var mapInited = false;
+            
+            window.fbAsyncInit = function() {
+                FB.init({
+                appId      : '1053807574653327',
+                xfbml      : true,
+                version    : 'v2.5'
+                });
+            };
+
+            (function(d, s, id){
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) {return;}
+                js = d.createElement(s); js.id = id;
+                js.src = "//connect.facebook.net/en_US/sdk.js";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));   
+            
+            function facebookPost(loc, desc, icon){
+                FB.ui({
+                    method: 'feed',
+                    caption: 'WEATHER INFORMATION FROM FORECAST.IO',
+                    name: 'Current Weather in '+ loc,
+                    description: desc,
+                    picture: icon,
+                    link: 'http://forecast.io/'
+                }, function(response){
+                    if(response && !response.error_code){
+                        alert("Posted Successfully");
+                    }else{
+                        alert("Not Posted");
+                    }
+                });
+            }
+            
+            function getIcon(icon) {
+                var icon_name;
+                switch (icon) {
+                    case "clear-day":
+                        icon_name = "clear.png";
+                        break;
+                    case "clear-night":
+                        icon_name = "clear_night.png";
+                        break;
+                    case "partly-cloudy-day":
+                        icon_name = "cloud_day.png";
+                        break;
+                    case "partly-cloudy-night":
+                        icon_name = "cloud_night.png";
+                        break;
+                    default:
+                        icon_name = icon + ".png";
+                }
+                return "img/" + icon_name;
+            }
+            
+            function parsePrecipitation(precip, unit) {
+                switch (true) {
+                    case (precip >= 0 && precip < 0.002 && unit || precip >= 0 && precip < 0.0508 && !unit):
+                        return "None";
+                    case (precip >= 0.002 && precip < 0.017 && unit || precip >= 0.0508 && precip < 0.4318 && !unit):
+                        return "Very Light";
+                    case (precip >= 0.017 && precip < 0.1 && unit || precip >= 0.4318 && precip < 2.54 && !unit):
+                        return "Light";
+                    case (precip >= 0.1 && precip < 0.4 && unit || precip >= 2.54 && precip < 10.16 && !unit):
+                        return "Moderate";
+                    default:
+                        return "Heavy";
+                }
+            }
+            
+            function createDailyPanel(unit, index) {
+                var colorMap = {
+                    1: "rgb(54, 125, 181)",
+                    2: "rgb(236, 68, 68)",
+                    3: "rgb(230, 142, 79)",
+                    4: "rgb(167, 164, 57)",
+                    5: "rgb(151, 112, 167)",
+                    6: "rgb(243, 124, 126)",
+                    7: "rgb(206, 69, 113)"
+                }
+                var html;
+                // panel
+                html = "<div class='panel panel-default img-rounded col-md-1 " + (index == 1? "col-md-offset-2": "") + "' data-toggle='modal' data-target='#tab3-modal" + index + "' style='background-color:" + colorMap[index] + ";'>";
+                // panel panel-body
+                html += "<div class='panel-body'><table class='table'>";
+                html += "<tr><td><strong>" + moment.unix(obj.daily.data[index].time).tz(obj.timezone).format("dddd") + "</strong></td></tr>";
+                html += "<tr><td><strong>" + moment.unix(obj.daily.data[index].time).tz(obj.timezone).format("MMM D") + "</strong></td></tr>";
+                html += "<tr><td><img src='" + getIcon(obj.daily.data[index].icon) + "' alt='" + obj.daily.data[index].summary + "' title='" + obj.daily.data[index].summary + "'></img></td></tr>";
+                html += "<tr><td>Min Temp</td></tr>";
+                html += "<tr><td><strong class='temp'>" + Math.round(obj.daily.data[index].temperatureMin) + "°</strong></td></tr>";
+                html += "<tr><td>Max Temp</td></tr>";
+                html += "<tr><td><strong class='temp'>" + Math.round(obj.daily.data[index].temperatureMax) + "°</strong></td></tr>";
+                html += "</table></div></div>"
+                // panel modal
+                html += "<div class='modal fade' id='tab3-modal" + index + "' tabindex='-1' role='dialog' aria-labelledby='tab3-modal" + index + "'><div class='modal-dialog' role='document'><div class='modal-content'>";
+                html += "<div class='modal-header''><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span araia-hidden='true'>&times;</span></button><h4 class='modal-title text-left'><strong>Weather in " + $("#city").val() + " on " + moment.unix(obj.daily.data[index].time).tz(obj.timezone).format("MMM D") + "</strong></h4></div>";
+                html += "<div class='modal-body'>";
+                html += "<div class='row'><div class='col-xs-12'><img src='" + getIcon(obj.daily.data[index].icon) + "' alt='" + obj.daily.data[index].summary + "' title='" + obj.daily.data[index].summary + "'></img></div></div>";
+                html += "<div class='row'><div class='col-xs-12 summary'>" + moment.unix(obj.daily.data[index].time).tz(obj.timezone).format("dddd") + ": <span style='color:rgb(255,165,0);'>" + obj.daily.data[index].summary + "</span></div></div>";
+                html += "<div class='row'>";
+                html += "<div class='col-md-4'><span class='strong'>Sunrise Time</span><br/><span class='small'>" + moment.unix(obj.daily.data[index].sunriseTime).tz(obj.timezone).format("hh:mm A") + "</span></div>";
+                html += "<div class='col-md-4'><span class='strong'>Sunset Time</span><br/><span class='small'>" + moment.unix(obj.daily.data[index].sunsetTime).tz(obj.timezone).format("hh:mm A") + "</span></div>";
+                html += "<div class='col-md-4'><span class='strong'>Humidity</span><br/><span class='small'>" + Math.round(obj.daily.data[index].humidity * 100) + "%</span></div>";
+                html += "</div>";
+                html += "<div class='row'>";
+                html += "<div class='col-md-4'><span class='strong'>Wind Speed</span><br/><span class='small'>" + obj.daily.data[index].windSpeed.toFixed(2) + (unit?"mph": "m/s") + "</span></div>";
+                html += "<div class='col-md-4'><span class='strong'>Visibility</span><br/><span class='small'>" + (obj.daily.data[index].visibility?  obj.daily.data[index].visibility.toFixed(2) + (unit?"mi": "km") : "N/A") + "</span></div>";
+                html += "<div class='col-md-4'><span class='strong'>Pressure</span><br/><span class='small'>" + obj.daily.data[index].pressure + (unit ? "mb" : "hPa") + "</span></div>";
+                html += "</div>";
+                html += "<div class='modal-footer'><button type='button' class='btn btn-default' data-dismiss='modal'>Close</button></div>";
+                html += "</div></div></div>";
+                return html;
+            }
+            
+            function createMap() {           
+                var map = new OpenLayers.Map("cloudMap");
+                var mapnik = new OpenLayers.Layer.OSM();
+                var layer_cloud = new OpenLayers.Layer.XYZ(
+                    "clouds",
+                    "http://${s}.tile.openweathermap.org/map/clouds/${z}/${x}/${y}.png", {
+                        isBaseLayer: false,
+                        opacity: 0.5,
+                        sphericalMercator: true
+                    }
+                );
+                var layer_precipitation = new OpenLayers.Layer.XYZ(
+                    "precipitation",
+                    "http://${s}.tile.openweathermap.org/map/precipitation/${z}/${x}/${y}.png", {
+                        isBaseLayer: false,
+                        opacity: 0.5,
+                        sphericalMercator: true
+                    }
+                );
+                map.addLayers([mapnik, layer_cloud, layer_precipitation]);
+                
+                var longlat = new OpenLayers.LonLat(obj.longitude, obj.latitude).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+                map.setCenter(longlat, 10);
+                mapInited = true;
+            }
+            
+            function parse() {
+                var unit = $("#degree_f").is(":checked")? true : false;
+                var html;
+                
+                html = "<div class='row' id='tab1-row1'' style='margin-left: 0;margin-right: 0;'><div class='col-md-6' style='padding-left: 0;padding-right: 0;height: 100%;'><table class='table table-striped'  style='margin-bottom: 0;'>";
+                html += "<thead id='tab1-weatherTable-header'><tr><th colspan='2' class='row'>";
+                html += "<div class='col-md-6 text-center'><img src='" + getIcon(obj.currently.icon) + "' alt='" + obj.currently.summary + "' title='" + obj.currently.summary + "' style='width: 140px;height: 140px;margin-top: 10px;margin-bottom: 10px;'></div>";
+                html += "<div class='col-md-6''>";
+                html += "<div class='row text-center'><strong style='color: white;'>" + obj.currently.summary + " in " + $("#city").val() + ", " + $("#states").val() + "</strong></div>";
+                html += "<div class='row text-center' style='color:white;'><span style='font-size: 80px;padding-right: 0;'>" + Math.round(obj.currently.temperature) + "</span><sup style='font-size: 20px;top: -40px;'>" + (unit? "°F":"°C") + "</sup></div>";
+                html += "<div class='row text-center'><strong class='text-right' style='color: blue;'>L : " + Math.round(obj.daily.data[0].temperatureMin) + "°</strong> | <strong class='text-left' style='color: green;'>H : " + Math.round(obj.daily.data[0].temperatureMax) + "°</strong></div>";
+                html += "<div class='row text-right' style='margin-top: -40px;'><img src='img/fb_icon.png' alt='http://facebook.com' class='img-rounded' onClick='facebookPost(\""  + $("#city").val() + ", " + $("#states").val() + "\",\"" + obj.currently.summary + "\",\"http://cs-server.usc.edu:21105/" + getIcon(obj.currently.icon) + "\")' style='width: 40px;height: 40px;'></div>";
+                html += "</div></th></tr></thead>";
+                html += "<tbody id='tab1-weatherTable-body'>";
+                html += "<tr><td class='col-xs-6''>Precipitation</td><td class='col-xs-6'>" + parsePrecipitation(obj.currently.precipIntensity, unit) + "</td></tr>";
+                html += "<tr><td class='col-xs-6'>Change of Rain</td><td class='col-xs-6'>" + Math.round(obj.currently.precipProbability * 100) + "%</td></tr>";
+                html += "<tr><td class='col-xs-6'>Wind Speed</td><td class='col-xs-6'>" + obj.currently.windSpeed.toFixed(2) + (unit?" mph": " m/s") + "</td></tr>";
+                html += "<tr><td class='col-xs-6'>Dew Point</td><td class='col-xs-6'>" + obj.currently.dewPoint.toFixed(2) + (unit? "°F": "°C") + "</td></tr>";
+                html += "<tr><td class='col-xs-6'>Humidity</td><td class='col-xs-6'>" + Math.round(obj.currently.humidity * 100) + "%</td></tr>";
+                html += "<tr><td class='col-xs-6'>Visibility</td><td class='col-xs-6'>" + obj.currently.visibility.toFixed(2) + (unit? " mi": " km") + "</td></tr>";
+                html += "<tr><td class='col-xs-6'>Sunrise</td><td class='col-xs-6'>" + moment.unix(obj.daily.data[0].sunriseTime).tz(obj.timezone).format("hh:mm A") + "</td></tr>";
+                html += "<tr><td class='col-xs-6'>Sunset</td><td class='col-xs-6'>" + moment.unix(obj.daily.data[0].sunsetTime).tz(obj.timezone).format("hh:mm A") + "</td></tr>";
+                html += "</tbody></table></div><div class='col-md-6' style='height:100%; padding:0; margin:0;'><div id='cloudMap' class='olMap'></div></div></div>";
+                $("#tab1").html(html);
+
+                
+                //Tab#2 HTML Generation
+                $("#tab2-table-body").empty();
+                $("#tab2-table-body").append("<tr><th>Time</th><th>Summary</th><th>Cloud Cover</th><th>Temp(" + (unit? "°F": "°C") + ")</th><th>View Details</th></tr>")
+                for (i = 0; i < 24; i++) {
+                    var html = "<tr><td>" + moment.unix(obj.hourly.data[i].time).tz(obj.timezone).format("hh:mm A") + "</td>";
+                    html += "<td><img src='" + getIcon(obj.hourly.data[i].icon) + "' alt='" + obj.hourly.data[i].summary + "' title='" + obj.hourly.data[i].summary + "'></img></td>";
+                    html += "<td>" + Math.round(obj.hourly.data[i].cloudCover * 100) + "%</td>";
+                    html += "<td>" + obj.hourly.data[i].temperature.toFixed(2) + "</td>";
+                    html += "<td><span class='glyphicon glyphicon-plus' data-toggle='collapse' data-target='#collapse-view-" + i + "'  style='color:#337ab7;'></span></td></tr>";
+                    html += "<tr class='collapse' id='collapse-view-" + i + "'><td colspan='5'><div class='table-responsive'><table class='table'><tbody>";
+                    html += "<tr><th><b>Wind</b></th><th><b>Humidity</b></th><th><b>Visibility</b></th><th><b>Pressure</b></th></tr>";
+                    html += "<tr><td>" + obj.hourly.data[i].windSpeed.toFixed(2) + (unit ? "mph" : "m/s") + "</td>";
+                    html += "<td>" + Math.round(obj.hourly.data[i].humidity * 100) + "%" + "</td>";
+                    html += "<td>" + obj.hourly.data[i].visibility.toFixed(2) + (unit? " mi": " km") + "</td>";
+                    html += "<td>" + obj.hourly.data[i].pressure + (unit ? "mb" : "hPa") + "</td>";
+                    html += "</tr></tbody></table></div></td></tr>";
+                    $("#tab2-table-body").append(html);
+                }
+                
+                $("#tab3").empty();
+                for (i = 1; i <= 7; i++) {
+                    $("#tab3").append(createDailyPanel(unit, i));
+                }
+                $("#tab1").tab("show");
+            }
+            
+            $().ready(function() {
+                
+                $("#result").hide();
+                
+                $("a[href=#tab1]").on("shown.bs.tab", function (e) {
+                    if (!mapInited) {
+                        createMap();
+                    }
+                });
+                
+                $("#forecastForm").validate({
+                    rules: {
+                        streetAddress: "required",
+                        city : "required",
+                        states: "required"
+                    },
+                    messages: {
+                        streetAddress: "Please enter the street address",
+                        city: "Please enter the city",
+                        states: "Select your state ..."
+                    },
+                    highlight: function(element, errorClass, validClass) {
+                        $(element).parent().addClass("has-error");
+                    },
+                    unhighlight: function(element, errorClass, validClass) {
+                        $(element).parent().removeClass("has-error");
+                    },
+                    submitHandler: function(form) {
+                        mapInited = false;
+                        $.ajax({
+                            url:"http://yangcs571-env.elasticbeanstalk.com/?" + $(form).serialize(),
+                            type: "GET",
+                            crossDomain: true,
+                            dataType: "json",
+                            success:function(output) {
+                                obj = output;
+                                parse();
+                                $("#result").show();
+                                if ($("#cloudMap").is(":visible")) {
+                                    createMap();
+                                }
+                            },
+                            error: function(){
+                                alert("error");
+                            }
+                        });
+                    }
+                });
+                
+                $("#clear").click(function() {
+                    $("label.error").remove();
+                    $("#tab3").empty();
+                    $("#tab2-table-body").empty();
+                    $("#result").hide();
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Forecast Search</h1>
+            <br/>
+            <div class="img-rounded" id="searchBox">
+                <div class="row">
+                    <form class="form-inline" id="forecastForm">
+                    <div class="form-group col-md-3">
+                            <label for="streetAddress">Stree Address: <span class="mandatory">*</span></label><br/>
+                            <input type="text" class="form-control" id="streetAddress"  name="streetAddress" placeholder="Enter street address">
+                        </div>
+                    <div class="form-group col-md-2">
+                            <label for="city">City: <span class="mandatory">*</span></label><br/>
+                            <input type="text" class="form-control" id="city" name="city" placeholder="Enter your city name">
+                        </div>
+                    <div class="form-group col-md-2">
+                            <label for="states">States: <span class="mandatory">*</span></label><br/>
+                            <select class="form-control" id="states" name="states">
+                                <option value="" disabled selected>Select your state...</option>
+                                <option value="AL">Alabama</option>
+                                <option value="AK">Alaska</option>
+                                <option value="AZ">Arizona</option>
+                                <option value="AR">Arkansas</option>
+                                <option value="CA">California</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CT">Connecticut</option>
+                                <option value="DE">Delaware</option>
+                                <option value="DC">District Of Columbia</option>
+                                <option value="FL">Florida</option>
+                                <option value="GA">Georgia</option>
+                                <option value="HI">Hawaii</option>
+                                <option value="ID">Idaho</option>
+                                <option value="IL">Illinois</option>
+                                <option value="IN">Indiana</option>
+                                <option value="IA">Iowa</option>
+                                <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
+                                <option value="LA">Louisiana</option>
+                                <option value="ME">Maine</option>
+                                <option value="MD">Maryland</option>
+                                <option value="MA">Massachusetts</option>
+                                <option value="MI">Michigan</option>
+                                <option value="MN">Minnesota</option>
+                                <option value="MS">Mississippi</option>
+                                <option value="MO">Missouri</option>
+                                <option value="MT">Montana</option>
+                                <option value="NE">Nebraska</option>
+                                <option value="NV">Nevada</option>
+                                <option value="NH">New Hampshire</option>
+                                <option value="NJ">New Jersey</option>
+                                <option value="NM">New Mexico</option>
+                                <option value="NY">New York</option>
+                                <option value="NC">North Carolina</option>
+                                <option value="ND">North Dakota</option>
+                                <option value="OH">Ohio</option>
+                                <option value="OK">Oklahoma</option>
+                                <option value="OR">Oregon</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="RI">Rhode Island</option>
+                                <option value="SC">South Carolina</option>
+                                <option value="SD">South Dakota</option>
+                                <option value="TN">Tennessee</option>
+                                <option value="TX">Texas</option>
+                                <option value="UT">Utah</option>
+                                <option value="VT">Vermont</option>
+                                <option value="VA">Virginia</option>
+                                <option value="WA">Washington</option>
+                                <option value="WV">West Virginia</option>
+                                <option value="WI">Wisconsin</option>
+                                <option value="WY">Wyoming</option>
+                            </select>
+                        </div>
+                    <div class="form-group col-md-2">
+                            <label for="degree">Degree: <span class="mandatory">*</span></label><br/>
+                            <label class="radio-inline">
+                                <input type="radio" name="degree" id="degree_f" value="us" checked> Fahrenheit
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="degree" id="degree_c" value="si">Celsius
+                            </label>
+                        </div>
+                    <div class="form-group col-md-3 text-right">
+                            <br/>
+                            <div class="inline">
+                                <button type="submit" class="btn btn-primary" id="submit">
+                                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>Search
+                                </button>
+                                <button type="reset" class="btn btn-default" id="clear">
+                                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>&nbsp; Clear
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-md-offset-9 text-right" id="powered">
+                        <strong>Powered by:</strong><a href="http://forecast.io/"><img src="img/forecast_logo.png" id="forecastIcon"></img></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="divider">
+            <div id="result" style="display:none;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#tab1" aria-controls="tab1" role="tab" data-toggle="tab">Right Now</a></li>
+                    <li role="presentation"><a href="#tab2" aria-controls="tab2" role="tab" data-toggle="tab">Next 24 Hours</a></li>
+                    <li role="presentation"><a href="#tab3" aria-controls="tab3" role="tab" data-toggle="tab">Next 7 Days</a></li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade active in" id="tab1">
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="tab2">
+                        <table class="table">
+                            <tbody id="tab2-table-body">                        
+                            </tbody>
+                        </table>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade row" id="tab3"></div>
+                </div>
+            </div>
+            <br/>
+            <br/>
+        </div>
+
+
+    </body>
+</html>

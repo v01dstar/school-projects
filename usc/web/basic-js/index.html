@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HW4</title>
+        <script type="text/javascript">                   
+            function loadXML(myForm) {
+                var url = myForm.URL.value;
+                if (url == null || url == "") {
+                    alert("Please input a valid xml");
+                    return;
+                }
+                xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", url, false);
+                xmlhttp.send();
+                if (xmlhttp.status == 404) {
+                        alert("XML not found");
+                } else if (xmlhttp.status == 200) {
+                    if (xmlhttp.responseXML == null) {
+                        alert("Error in XML file");
+                    } else if (xmlhttp.responseXML.documentElement.nodeName == "parsererror") {
+                        alert("Error in XML file");
+                    } else if (xmlhttp.responseXML.getElementsByTagName("Row").length == 0) {
+                        alert("No <Row> tag in XML");
+                    } else {
+                        viewXML(xmlhttp.responseXML);
+                    }
+                } else {
+                    alert("Unknown error");
+                }
+            }
+            
+            function parseXML(hWin, xmlDoc) {
+                var workbook = xmlDoc.documentElement;
+                
+                var title = document.createElement("title");
+                hWin.document.head.appendChild(title);
+                title.appendChild(document.createTextNode(workbook.nodeName));
+                
+                var table = document.createElement("table");
+                table.style.border = "solid";
+                hWin.document.body.appendChild(table);
+                
+                var xmlHeader = xmlDoc.getElementsByTagName("Header").item(0);
+                var row = table.insertRow(-1);
+                
+                for (i = 0; i < xmlHeader.childNodes.length; i++) {
+                    if (xmlHeader.childNodes.item(i).nodeType == 1) {
+                        var cell = row.insertCell(-1);
+                        cell.style.border = "solid";
+                        cell.style.textAlign = "center";
+                        var b = document.createElement("b");
+                        cell.appendChild(b);
+                        if (xmlHeader.childNodes.item(i).firstChild.nodeValue != null) {
+                            b.innerHTML = xmlHeader.childNodes.item(i).firstChild.nodeValue;
+                        } else {
+                            b.innerHTML = "N.A";
+                        }
+                    }
+                }
+                
+                var xmlRows = xmlDoc.getElementsByTagName("Row");
+                
+                for (i = 0; i< xmlRows.length; i++) {
+                    var xmlRow = xmlRows.item(i);
+                    var row = table.insertRow(-1);
+                    
+                    for (j = 0; j< xmlRow.childNodes.length; j++) {
+                        var xmlCell = xmlRow.childNodes.item(j);
+                        if (xmlCell.nodeType == 1) {
+                            var cell = row.insertCell(-1);
+                            cell.style.border = "solid";
+
+                            if (xmlCell.nodeName == "Logo") {
+                                if (xmlCell.firstChild != null) {
+                                    var image = document.createElement("img");
+                                    image.src = xmlCell.firstChild.nodeValue;
+                                    image.alt= xmlCell.firstChild.nodeValue;
+                                    cell.appendChild(image);
+                                } else {
+                                    cell.innerHTML = "N.A";
+                                }
+                            } else if (xmlCell.nodeName == "HomePage") {
+                                var link = document.createElement("a");
+                                cell.appendChild(link);
+                                if (xmlCell.firstChild != null) {
+                                    link.href = xmlCell.firstChild.nodeValue;
+                                    link.innerHTML = xmlCell.firstChild.nodeValue;
+                                } else {
+                                    link.innerHTML = "N.A";
+                                }
+                            } else if (xmlCell.nodeName == "Feeds") {
+                                var ul = document.createElement("ul");
+                                var counter = 0;
+                                for (k = 0; k < xmlCell.childNodes.length; k++) {
+                                    if (xmlCell.childNodes.item(k).nodeType == 1) {
+                                        if (xmlCell.childNodes.item(k).firstChild != null) {
+                                            var li = document.createElement("li");
+                                            ul.appendChild(li);
+                                            li.innerHTML = xmlCell.childNodes.item(k).firstChild.nodeValue;
+                                            counter ++;
+                                        }
+                                    }
+                                }
+                                if (counter > 0) {
+                                    cell.appendChild(ul);
+                                } else {
+                                    cell.innerHTML = "N.A";
+                                }
+                            } else {
+                                if (xmlCell.firstChild != null) {
+                                    cell.innerHTML = xmlCell.firstChild.nodeValue;
+                                } else {
+                                    cell.innerHTML = "N.A";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            function viewXML(xmlDoc) {
+                var hWin = window.open("", "View", "height = 600, width = 1200");
+                parseXML(hWin, xmlDoc);
+                hWin.document.close();
+            }
+        </script>
+    </head>
+    <body style="text-align:center">
+        <h2>Enter URL for Company List XML File</h2>
+        <br />
+        <form name="hw4form" method="post" id="location">
+            <input type="url" name="URL" maxlength="255" size="50" />
+            <br />
+            <br />
+            <input type="button" name="submit" value="Submit Query" onclick="loadXML(this.form)" />
+        </form>
+        <noscript>
+    </body>
+</html>

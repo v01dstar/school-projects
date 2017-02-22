@@ -1,0 +1,13 @@
+{
+    "clear-day" : "clear.png",
+    "clear-night" : "clear_night.png",
+    "rain" : "rain.png",
+    "snow" : "snow.png",
+    "sleet" : "sleet.png",
+    "wind" : "wind.png",
+    "fog" : "fog.png",
+    "cloudy" : "cloudy.png",
+    "partly-cloudy-day" : "cloud_day.png",
+    "partly-cloudy-night" : "cloud_night.png",
+    "storm" : "storm.png"
+}

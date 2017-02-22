@@ -1,0 +1,185 @@
+html {
+    background: url(../img/bg.jpg) no-repeat center center fixed;
+    background-position: top;
+    background-size: cover;
+}
+
+body {
+    background-color: transparent;
+}
+
+h1 {
+    text-align: center;
+}
+
+#forecastForm .form-control {
+    width: 100%;
+}
+
+#forecastForm .form-group {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+
+#searchBox {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 25px;
+    padding-right: 25px;
+    color: white;
+    background-color: rgba(92, 92, 92, 0.5);
+}
+
+#forecastIcon {
+    width: 100px;
+    height: 50px;
+}
+
+
+.mandatory {
+    color: red;
+}
+
+label.error {
+    color: red;
+}
+
+#forecastForm .radio-inline {
+    margin-left: 0;
+}
+
+#result .active a{
+    background-color: #337ab7;
+    color: white;
+}
+
+#result a {
+    background-color: white;
+    color: #337ab7;
+}
+
+#tab1-weatherTable-header {
+    background-color:rgb(242,126,127);
+}
+
+#tab1-weatherTable-body {
+    background-color: rgb(242,222,222);
+}
+
+@media (max-width: 992px) {
+    #cloudMap {
+        height: 473px;
+    }
+    
+    #tab3 .panel {
+        margin-left: 10px;
+    }
+    
+    #tab3 .modal .small {
+        font-weight: lighter;
+    }
+}
+
+@media (min-width: 992px) {
+    #tab1-row1 {
+        height: 473px;
+    }
+    
+    #cloudMap {
+        height: 100%;
+    }
+    
+    #tab3 {
+        background-color: black;
+    }
+
+    
+    #tab3 .modal .strong {
+        font-weight: bold;
+    }
+}
+
+#tab2 td {
+    text-align: center;
+    background-color: white;
+}
+
+#tab2 th {
+    background-color: #337ab7;
+    text-align: center;
+    color: white;
+}
+
+#tab2 .collapse td {
+    background-color: rgb(242, 242, 242);
+}
+
+#tab2 table table th {
+    color: black;
+    background-color: white;
+}
+
+#tab2 tbody img {
+    width: 40px;
+    height: 40px;
+}
+
+#tab2 table .collapse {
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#tab3 {
+    color: white;
+    text-align: center;
+    margin: 0;
+}
+
+#tab3 .panel {
+    border: 0;
+    margin-top: 5px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    padding: 0;
+}
+
+#tab3 .panel-body {
+    padding: 0;
+}
+
+#tab3 td {
+    border: 0;
+}
+
+#tab3 img {
+    width: 60px;
+    height: 60px;
+}
+
+#tab3 .temp {
+    font-size: 40px;
+}
+
+#tab3 .modal {
+    color: black;
+}
+
+#tab3 .modal img {
+    height: 120px;
+    width: 120px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+#tab3 .modal .summary {
+    font-size: 20px;
+}
+
+
+#tab3 .modal .col-md-4 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

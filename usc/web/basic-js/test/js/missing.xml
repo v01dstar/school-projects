@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<Workbook>
+  <Table>
+   <Header>
+    <Data>Network</Data>
+    <Data>Founder</Data>
+    <Data>Feeds</Data>
+    <Data>Notes</Data>
+    <Data>HomePage</Data>
+    <Data>Logo</Data>
+   </Header>
+   <Row>
+    <Network>AMC</Network>
+    <Owner>AMC Networks</Owner>
+    <Feeds>
+        <Feed></Feed>
+        <Feed></Feed>
+    </Feeds>
+    <Notes> formerly American Movie Classics (English) and (Spanish) audio feed </Notes>
+    <HomePage>http://www.amctv.com/</HomePage>
+    <Logo>http://cs-server.usc.edu:45678/hw/hw4/AMC_logo_2013.png</Logo>
+   </Row>
+
+
+   <Row>
+    <Network>Bravo</Network>
+    <Owner></Owner>
+    <Feeds>
+        <Feed>Bravo East</Feed>
+        <Feed></Feed>
+        <Feed>Bravo On Demand</Feed>
+    </Feeds>
+    <Notes> (English) and (Spanish) audio feed </Notes>
+    <HomePage>http://www.bravotv.com/</HomePage>
+    <Logo></Logo>
+   </Row>
+
+   <Row>
+    <Network>Comedy Central</Network>
+    <Owner>Viacom Media Networks</Owner>
+    <Feeds>
+    </Feeds>
+    <Notes> A product of the merger of Viacom's HA! TV Comedy Network and The Comedy Channel, owned by Time Warner. (English) and (Spanish) audio feed</Notes>
+    <HomePage></HomePage>
+    <Logo>http://cs-server.usc.edu:45678/hw/hw4/ComedyCentral.png</Logo>
+   </Row>
+</Table>
+</Workbook>

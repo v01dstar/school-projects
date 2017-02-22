@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<Workbook>
+  <Table>
+   <Header>
+    <Data>Network</Data>
+    <Data>Owner</Data>
+    <Data>Feeds</Data>
+    <Data>Notes</Data>
+    <Data>HomePage</Data>
+    <Data>Logo</Data>
+   </Header>
+   <Row>
+    <Network>AMC</Network>
+    <Owner>AMC Networks</Owner>
+    <Feeds>
+        <Feed>AMC East</Feed>
+        <Feed>AMC On Demand</Feed>
+    </Feeds>
+    <Notes> formerly American Movie Classics (English) and (Spanish) audio feed </Notes>
+    <HomePage>http://www.amctv.com/</HomePage>
+    <Logo>http://cs-server.usc.edu:45678/hw/hw4/AMC_logo_2013.png</Logo>
+   </Row>
+
+
+   <Row>
+    <Network>Bravo</Network>
+    <Owner>NBC Universal</Owner>
+    <Feeds>
+        <Feed>Bravo East</Feed>
+        <Feed>Bravo West</Feed>
+        <Feed>Bravo On Demand</Feed>
+    </Feeds>
+    <Notes> (English) and (Spanish) audio feed </Notes>
+    <HomePage>http://www.bravotv.com/</HomePage>
+    <Logo>http://cs-server.usc.edu:45678/hw/hw4/bravo.png</Logo>
+   </Row>
+
+   <Row>
+    <Network>Comedy Central</Network>
+    <Owner>Viacom Media Networks</Owner>
+    <Feeds>
+        <Feed>Comedy Central East</Feed>
+        <Feed>Comedy Central West</Feed>
+        <Feed>Comedy Central On Demand</Feed>
+    </Feeds>
+    <Notes> A product of the merger of Viacom's HA! TV Comedy Network and The Comedy Channel, owned by Time Warner. (English) and (Spanish) audio feed</Notes>
+    <HomePage>http://cc.com/</HomePage>
+    <Logo>http://cs-server.usc.edu:45678/hw/hw4/ComedyCentral.png</Logo>
+   </Row>
+</Table>
+<Workbook>
